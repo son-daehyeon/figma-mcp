@@ -1,7 +1,6 @@
 import { execFileSync } from 'node:child_process'
-import { homedir } from 'node:os'
 
-const dir = `${homedir()}/Desktop/figma-bridge`
+const dir = import.meta.dirname
 const ping = () => {
   try {
     return JSON.parse(execFileSync('node', [`${dir}/cli.ts`, 'ping'], { encoding: 'utf8' }))
