@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        margin: 12px;
+        font: 12px/18px Inter, system-ui, sans-serif;
+        color: var(--figma-color-text, #1e1e1e);
+        background: var(--figma-color-bg, #fff);
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--figma-color-icon-warning, #f5a623);
+      }
+      .dot[data-state='connected'] {
+        background: var(--figma-color-icon-success, #14ae5c);
+      }
+      .muted {
+        color: var(--figma-color-text-secondary, #757575);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="row"><span id="dot" class="dot"></span><strong id="state">Connecting to relay…</strong></div>
+    <div id="file" class="muted"></div>
+    <div id="mode" class="muted"></div>
+    <div id="last" class="muted"></div>
+    <script>"use strict";
+(() => {
+  // protocol.ts
+  var DEFAULT_PORT = 3056;
+
+  // plugin/ui.ts
+  var RELAY_URL = `ws://localhost:${DEFAULT_PORT}/plugin`;
+  var element = (id) => document.getElementById(id);
+  var socket;
+  var hello;
+  var retryMs = 500;
+  function show(state) {
+    element("dot").dataset.state = state;
+    element("state").textContent = state === "connected" ? "Connected to relay" : "Relay offline \u2014 retrying";
+    if (hello) {
+      element("file").textContent = `File: ${hello.file.name}`;
+      element("mode").textContent = hello.capabilities.eval ? "Mode: exec + ops" : "Mode: ops only";
+    }
+  }
+  function forward(message) {
+    if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify(message));
+  }
+  function connect() {
+    socket = new WebSocket(RELAY_URL);
+    socket.onopen = () => {
+      retryMs = 500;
+      show("connected");
+      parent.postMessage({ pluginMessage: { kind: "ready" } }, "*");
+    };
+    socket.onmessage = (event) => {
+      const command = JSON.parse(String(event.data));
+      element("last").textContent = `Last: ${command.kind} #${command.id}`;
+      parent.postMessage({ pluginMessage: command }, "*");
+    };
+    socket.onclose = () => {
+      show("reconnecting");
+      setTimeout(connect, retryMs);
+      retryMs = Math.min(retryMs * 2, 1e4);
+    };
+  }
+  window.onmessage = (event) => {
+    const message = event.data?.pluginMessage;
+    if (!message) return;
+    if (message.kind === "hello") {
+      hello = message;
+      show(socket?.readyState === WebSocket.OPEN ? "connected" : "reconnecting");
+    }
+    forward(message);
+  };
+  connect();
+})();
+</script>
+  </body>
+</html>

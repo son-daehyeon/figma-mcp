@@ -1,0 +1,22 @@
+{
+  "name": "figma-mcp",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node plugin/build.ts",
+    "relay": "node --env-file-if-exists=.env relay/server.ts",
+    "cli": "node --env-file-if-exists=.env cli.ts",
+    "test": "node --test \"relay/*.test.ts\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p plugin/tsconfig.json"
+  },
+  "dependencies": {
+    "ws": "8.22.0"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "1.141.0",
+    "@types/node": "26.6.5",
+    "@types/ws": "8.18.2",
+    "esbuild": "0.28.2",
+    "typescript": "7.0.2"
+  }
+}

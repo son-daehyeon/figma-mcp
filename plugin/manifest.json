@@ -1,0 +1,14 @@
+{
+  "name": "Figma Bridge",
+  "id": "figma-bridge-dev",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "ui": "dist/ui.html",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["none"],
+    "devAllowedDomains": ["http://localhost:3056", "ws://localhost:3056"],
+    "reasoning": "Talks only to the bridge relay running on this machine."
+  }
+}

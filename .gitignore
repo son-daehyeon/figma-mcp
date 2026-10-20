@@ -1,0 +1,5 @@
+.token
+node_modules/
+.out/
+.work/
+.DS_Store
